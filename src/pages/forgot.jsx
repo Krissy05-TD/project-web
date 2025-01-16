@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { firestore } from '../firebase'; // Ensure you have Firebase set up
-import { getFirestore, doc } from 'firebase/firestore';
+import { getFirestore, doc, updateDoc } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import { getDoc, collection } from '@firebase/firestore';
 import './style/forgot.css'; // Assuming you have the CSS file for styling
@@ -24,33 +24,48 @@ export default function Forgot() {
   const [number, setNumber] = useState('');
   const [email, setEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [newPassword, setNewPassword] = useState('');
 
-  const ref = collection(firestore, 'users'); // Reference to 'users' collection in Firestore
+  const ref = collection(firestore, 'login'); // Reference to 'users' collection in Firestore
 
   useEffect(() => {
     const storedEmail = localStorage.getItem('email'); // Retrieve email from localStorage
     if (storedEmail) {
         setEmail(storedEmail);
         fetchUserName(storedEmail); // Fetch firstname using the email
+    }    
+    const storedNumber = localStorage.getItem('number'); // Retrieve email from localStorage
+    if (storedNumber) {
+        setNumber(storedNumber);
+        fetchUserName(storedNumber); // Fetch firstname using the email
     }
-}, []);
+  }, []);
 
-const fetchUserName = async (email) => {
+  const fetchUserName = async (identifier) => {
     try {
-        const docRef = doc(db, 'users', email); // Reference the document by email
-        const docSnap = await getDoc(docRef);
+      const isEmail = identifier.includes('@'); // Basic check for email format
+      let docRef;
 
-        if (docSnap.exists()) {
-            const userData = docSnap.data();
-            setFirstName(userData.firstname || 'Guest'); // Set firstname or fallback to 'Guest'
-            console.log(`User exists: ${email}, Name: ${userData.firstname}`);
-        } else {
-            console.log(`User does not exist: ${email}`);
-        }
+      if (isEmail) {
+        docRef = doc(db, 'users', identifier); // If email, query by email
+      } else {
+        docRef = doc(db, 'users', identifier); // If phone number, query by phone number
+      }
+
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        setFirstName(userData.firstname || 'Guest'); // Set firstname or fallback to 'Guest'
+        localStorage.setItem('firstname', userData.firstname || 'Guest'); // Store firstname
+        console.log(`User exists: ${identifier}, Name: ${userData.firstname}`);
+      } else {
+        console.log(`User does not exist: ${identifier}`);
+      }
     } catch (error) {
-        console.error('Error fetching user data:', error);
+      console.error('Error fetching user data:', error);
     }
-};
+  };
 
   const handleOtpMethodChange = (e) => {
     setOtpMethod(e.target.value);
@@ -95,18 +110,17 @@ const fetchUserName = async (email) => {
   
     let firstname = ''; // Placeholder for the user's firstname
     if (otpMethod === 'number' && number) {
-      // Simulate fetching firstname from database based on number
-      firstname = {number}; // Replace with actual lookup logic
+      firstname = number; // Use the phone number as the firstname temporarily
       localStorage.setItem('userId', number); // Save phone number
       localStorage.setItem('firstname', firstname); // Save firstname
       await generateAndSendOTP(otp, 'number');
     } else if (otpMethod === 'email' && email) {
-      // Simulate fetching firstname from database based on email
-      firstname = {email}; // Replace with actual lookup logic
+      firstname = email; // Use the email as the firstname temporarily
       localStorage.setItem('userId', email); // Save email
       localStorage.setItem('firstname', firstname); // Save firstname
       await generateAndSendOTP(otp, 'email');
-    } else {
+    }
+    else {
       setErrorMessage('Please fill in the required fields.');
     }
   
@@ -114,6 +128,24 @@ const fetchUserName = async (email) => {
       console.log(`User verified: ${firstname}`); // Log firstname as verification
     }
   };  
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    const userId = localStorage.getItem('userId');
+    if (!userId || !newPassword) return setErrorMessage('Please provide a new password.');
+
+    try {
+      // Update the password in the "passwords" collection
+      const passwordRef = doc(db, 'passwords', userId);
+      await updateDoc(passwordRef, { password: newPassword });
+
+      alert('Password updated successfully!');
+      window.location.href = '/login'; // Redirect to login page after password change
+    } catch (error) {
+      console.error('Error updating password:', error);
+      setErrorMessage('Error updating password.');
+    }
+  };
 
   return (
     <div>
@@ -125,7 +157,7 @@ const fetchUserName = async (email) => {
               alt="back arrow icon"
               className="icon arrow"
               style={{ width: '20px', height: '20px' }}
-              onClick={() => window.location.href = '/login'} // Redirect to previous page
+              onClick={() => window.location.href = '/loginN'} // Redirect to previous page
             />
           </div>
           <div className='opt'>
