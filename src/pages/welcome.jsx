@@ -16,8 +16,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export default function Welcomes() {
-    const [firstname, setFirstName] = useState('');
+export default function Welcome() {
     const [email, setEmail] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -28,6 +27,8 @@ export default function Welcomes() {
             fetchUserName(storedEmail); // Fetch firstname using the email
         }
     }, []);
+
+    const [firstname, setFirstName] = localStorage.getItem("firstname") || "User"; 
 
     const fetchUserName = async (email) => {
         try {

@@ -1,12 +1,13 @@
 import React, { useState, useRef } from "react";
 import { firestore } from "../firebase";
 import { collection } from "@firebase/firestore"
+import { doc, setDoc, getDoc } from "firebase/firestore"; 
 import "./style/edit.css"
 
 export default function Edit() {
     const ref = collection(firestore, "users"); 
 
-    const [username] = useState("");
+    const [username, setUserName] = useState("");
     const usernameRef = useRef();
     const firstnameRef = useRef();
     const lastnameRef = useRef();
@@ -48,27 +49,73 @@ export default function Edit() {
 
     const handleSave = async (e) => {
         e.preventDefault();
-
-        // Sanitize and retrieve input values
-        const sanitizedNumber = number.replace(/\s/g, ""); // Remove spaces from the phone number
+    
+        const email = emailRef.current.value.trim();
+        if (!email) {
+            alert("Email is required to save changes.");
+            return;
+        }
+    
+        const sanitizedNumber = number.replace(/\s/g, ""); 
         const password = passwordRef.current.value;
         const confirmPassword = document.getElementById("c-confirm-password").value;
-
-        const data = {
+    
+        const newData = {
+            username: usernameRef.current.value.trim(),
             firstname: firstnameRef.current.value.trim(),
             lastname: lastnameRef.current.value.trim(),
             number: sanitizedNumber,
-            email: emailRef.current.value.trim(),
+            email,
             password,
         };
-
-        if (!data.firstname || !data.lastname || !data.number || !data.email || !data.password) {
+    
+        if (!newData.firstname || !newData.lastname || !newData.number || !newData.email || !newData.password) {
             alert("All fields are required.");
             return;
         }
         if (password !== confirmPassword) {
             alert("Passwords do not match. Please check and try again.");
             return;
+        }
+    
+        try {
+            // Get old data
+            const userDoc = doc(firestore, "edit", email); // Save under "edit"
+            const docSnap = await getDoc(userDoc);
+    
+            let oldData = {};
+            if (docSnap.exists()) {
+                oldData = docSnap.data();
+            }
+    
+            // Save the updated data under "edit"
+            await setDoc(userDoc, newData, { merge: true });
+    
+            // Save firstname in localStorage for the welcome page
+            localStorage.setItem("firstname", newData.firstname);
+    
+            // Show before and after values
+            alert(`
+            Changes Saved!
+            Before: 
+            - Firstname: ${oldData.firstname || "N/A"}
+            - Lastname: ${oldData.lastname || "N/A"}
+            - Username: ${oldData.username || "N/A"}
+            - Number: ${oldData.number || "N/A"}
+    
+            After:
+            - Firstname: ${newData.firstname}
+            - Lastname: ${newData.lastname}
+            - Username: ${newData.username}
+            - Number: ${newData.number}
+            `);
+    
+            // Redirect to the welcome page with the new data
+            window.location.href = "/welcome";
+    
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            alert("Failed to update profile. Please try again.");
         }
     };
 
@@ -116,11 +163,12 @@ export default function Edit() {
                             <div>
                                 <input
                                     type="text"
-                                    id="change"
+                                    id="change-u"
                                     placeholder="New Username"
                                     ref={usernameRef}
                                     value={username}
-                                    required />
+                                    onChange={(e) => setUserName(e.target.value)}
+                                    />
                                 <button type="submit" id="user-btn">
                                     Change Username
                                 </button>
@@ -134,9 +182,8 @@ export default function Edit() {
                                     value={firstname}
                                     id="change-f"
                                     onChange={(e) => setFirstName(e.target.value)}
-                                    required
                                 />
-                                <button type="submit" id="user-btn">
+                                <button type="submit" id="first-btn">
                                     Change Firstname
                                 </button>
                             </div>
@@ -145,9 +192,9 @@ export default function Edit() {
                                     type="text"
                                     placeholder="Enter Last Name"
                                     ref={lastnameRef}
-                                    id="change"
-                                    required
-                                /><button type="submit" id="user-btn">
+                                    id="change-l"
+                                    />
+                                    <button type="submit" id="last-btn">
                                     Change Lastname
                                 </button>
                             </div>
@@ -162,8 +209,8 @@ export default function Edit() {
                                     id="change-n"
                                     value={number}
                                     onChange={handleNumberChange}
-                                    required
-                                /><button type="submit" id="user-btn">
+                                    />
+                                    <button type="submit" id="num-btn">
                                     Change Number
                                 </button>
                             </div>
@@ -173,10 +220,10 @@ export default function Edit() {
                                     type="email"
                                     placeholder="example@gmail.com"
                                     name="email"
-                                    id="change"
+                                    id="change-e"
                                     ref={emailRef}
-                                    required
-                                /><button type="submit" id="user-btn">
+                                />
+                                <button type="submit" id="mail-btn">
                                     Change Email
                                 </button>
                             </div>
@@ -191,7 +238,6 @@ export default function Edit() {
                                     ref={passwordRef}
                                     autoComplete="off"
                                     id="change"
-                                    required
                                 />
                                 <img
                                     id="change-img"
@@ -200,14 +246,14 @@ export default function Edit() {
                                     width="20px"
                                     height="20px"
                                     onClick={() => togglePasswordVisibility("password")}
-                                /><button type="submit" id="user-btn">
+                                /><button type="submit" id="pass-btn">
                                     Change Password
                                 </button>
                             </div>
                         </div>
                     </div>
                 </form>
-                <button type="submit" id="save">Save Changes</button>
+                <button type="submit" id="save" onClick={handleSave}>Save Changes</button>
 
             </form>
         </div>

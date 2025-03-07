@@ -162,6 +162,9 @@ html {
 }
 
 #change-f,
+#change-l,
+#change-e,
+#change-u,
 #change-n {
     border: none;
     padding: 7px;
@@ -171,6 +174,9 @@ html {
 }
 
 #change-f:focus,
+#change-e:focus,
+#change-u:focus,
+#change-l:focus,
 #change-n:focus {
     border: 0.5px solid rgb(235, 227, 159);
     outline: none;
@@ -181,7 +187,12 @@ html {
     margin-top: 0;
 }
 
-#user-btn {
+#user-btn,
+#first-btn,
+#last-btn,
+#num-btn,
+#mail-btn,
+#pass-btn {
     padding: 7px;
     border-radius: 5px;
     font-size: 14px;
@@ -200,7 +211,12 @@ html {
     margin-bottom: 20px;
 }
 
-#user-btn:hover {
+#user-btn:hover, 
+#first-btn:hover,
+#last-btn:hover,
+#num-btn:hover,
+#mail-btn:hover,
+#pass-btn:hover {
     cursor: pointer;
     background-color: rgb(236, 223, 106);
     box-shadow: 0 2px 5px rgba(0, 0, 0 ,0.2);
