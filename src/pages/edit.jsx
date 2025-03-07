@@ -22,7 +22,7 @@ export default function Edit() {
     const handleSignOut = () => {
         localStorage.removeItem("email");
         localStorage.removeItem("firstname");
-        window.location.href = "/login";
+        window.location.href = "/loginN";
     };
 
     const handleNumberChange = (e) => {

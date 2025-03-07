@@ -4,7 +4,7 @@ import { getDocs, query, where, collection } from "@firebase/firestore";
 import "./style/login.css";
 
 export default function Login() {
-  const ref = collection(firestore, "users"); // Query the 'users' collection
+  const ref = collection(firestore, "edits"); // Query the 'users' collection
 
   const [firstname, setFirstname] = useState(""); // Changed from username to email
   const [password, setPassword] = useState("");
