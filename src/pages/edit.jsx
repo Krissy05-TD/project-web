@@ -101,7 +101,7 @@ export default function Edit() {
                             <li><a href="/edit">Edit Profile</a></li>
                             <li><a href="https://kristenfolio.netlify.app/">About</a></li>
                             <li><a href="/contact">Contact</a></li>
-                            <button type="button" onClick={handleSignOut}>Sign Out</button>
+                            <button type="button" id="wel-mit" onClick={handleSignOut}>Sign Out</button>
                         </div>
                     </div>
                 </nav>
