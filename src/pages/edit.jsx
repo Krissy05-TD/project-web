@@ -36,26 +36,32 @@ export default function Edit() {
     };
 
     const updateField = async (field, value) => {
-        const userEmail = emailRef.current.value.trim();
+        const userEmail = localStorage.getItem("email"); // Get email from localStorage
         if (!userEmail) {
-            alert("Please enter your email first.");
+            alert("User email not found. Please log in again.");
             return;
         }
-
+    
+        if (!value.trim()) {
+            alert(`Please enter a valid ${field}.`);
+            return;
+        }
+    
         try {
             const userDoc = doc(firestore, "edits", userEmail);
             await setDoc(userDoc, { [field]: value }, { merge: true });
-
+    
             if (field === "firstname") {
-                localStorage.setItem("firstname", value);
+                localStorage.setItem("firstname", value); // Update localStorage
             }
-
+    
             alert(`${field} updated successfully!`);
         } catch (error) {
             console.error(`Error updating ${field}:`, error);
             alert(`Failed to update ${field}. Please try again.`);
         }
     };
+    
 
     const handleSave = async (e) => {
         e.preventDefault();
@@ -120,6 +126,7 @@ export default function Edit() {
                                     ref={usernameRef}
                                     value={username}
                                     onChange={(e) => setUserName(e.target.value)}
+                                    onClick={handleSave}
                                 />
                                 <button type="button" id="user-btn" onClick={() => updateField("username", username)}>Change Username</button>
                             </div>
@@ -130,10 +137,15 @@ export default function Edit() {
                                     id="change-f"
                                     placeholder="Enter First Name"
                                     ref={firstnameRef}
-                                    value={firstname}
-                                    onChange={(e) => setFirstName(e.target.value)}
+                                    value={firstname} // Ensure full name is displayed
+                                    onChange={(e) => {
+                                        setFirstName(e.target.value);
+                                        console.log("First Name Updated:", e.target.value); // Debugging
+                                    }}
                                 />
-                                <button type="button" id="first-btn" onClick={() => updateField("firstname", firstname)}>Change Firstname</button>
+                                <button type="button" id="first-btn" onClick={() => updateField("firstname", firstname)}>
+                                    Change Firstname
+                                </button>
                             </div>
 
                             <div>
@@ -187,7 +199,7 @@ export default function Edit() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
-                                <button type="button" id="pass-btn" onClick={() => updateField("password", passwordRef.current.value)}>Change Password</button>
+                                <button type="button" id="pass-btn" onClick={handleSave}>Change Password</button>
                             </div>
                         </div>
                     </div>

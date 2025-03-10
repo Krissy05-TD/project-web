@@ -3,7 +3,7 @@ import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { getAuth, updatePassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for React Router v6
 import "./style/new.css";
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from "firebase/app";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBEy6Sh4rk9WiJHyueMVYhnRmGUeCsDQQs",
@@ -11,16 +11,16 @@ const firebaseConfig = {
   projectId: "signin-88f3a",
   storageBucket: "signin-88f3a.firebasestorage.app",
   messagingSenderId: "105171186737",
-  appId: "1:105171186737:web:cb685e4b96161941b51110"
+  appId: "1:105171186737:web:cb685e4b96161941b51110",
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth();
+const auth = getAuth(app);
 
 export default function New() {
-  const [firstname, setFirstName] = useState('');
+  const [firstname, setFirstName] = useState("");
   const passwordRef = useRef();
   const confirmPasswordRef = useRef();
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -35,14 +35,16 @@ export default function New() {
     specialChar: false,
   });
 
-  const formRef = useRef();  // Reference to the form
+  const formRef = useRef(); // Reference to the form
   const navigate = useNavigate(); // Use navigate hook for React Router v6
 
   const isPasswordValid = (password) => {
     const validLength = password.length >= 8;
     const validDigits = /\d/.test(password);
     const validUppercase = /[A-Z]/.test(password);
-    const validSpecialChar = /[~!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(password);
+    const validSpecialChar = /[~!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(
+      password
+    );
 
     return {
       length: validLength,
@@ -53,76 +55,83 @@ export default function New() {
   };
 
   useEffect(() => {
-    const storedFirstname = localStorage.getItem('firstname');
+    const storedFirstname = localStorage.getItem("firstname");
     if (storedFirstname) {
       setFirstName(storedFirstname);
     }
   }, []);
 
-  const passwordRequirements = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+  const passwordRequirements =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
 
-  const handleSavePassword = async (e) => {
-    e.preventDefault(); // Prevent form from submitting by default
-    setError("");
-  
-    const password = passwordRef.current.value.trim();
-    const confirmPassword = confirmPasswordRef.current.value.trim();
-  
-    if (!password || !confirmPassword) {
-      setError("* Both password fields are required!");
-      return;
-    }
-  
-    if (password !== confirmPassword) {
-      setError("* Passwords do not match!");
-      return;
-    }
-  
-    if (!passwordRequirements.test(password)) {
-      setError(
-        "* Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character."
-      );
-      return;
-    }
-  
-    setLoading(true);
-    try {
-      // Get the logged-in user
-      const user = auth.currentUser;
-      if (!user) {
-        setError("* No user is logged in!");
+    const handleSavePassword = async (e) => {
+      if (e) e.preventDefault(); // Prevent form from reloading
+    
+      console.log("handleSavePassword function is running"); // Debugging log
+      setError("");
+    
+      const password = passwordRef.current.value.trim();
+      const confirmPassword = confirmPasswordRef.current.value.trim();
+    
+      console.log("Password entered:", password);
+      console.log("Confirm password entered:", confirmPassword);
+    
+      if (!password || !confirmPassword) {
+        setError("* Both password fields are required!");
+        console.log("Error: Both password fields are required!");
         return;
       }
-  
-      // Get the firstname from localStorage
-      const storedFirstname = localStorage.getItem("firstname");
-      if (!storedFirstname) {
-        setError("* Firstname not found!");
+    
+      if (password !== confirmPassword) {
+        setError("* Passwords do not match!");
+        console.log("Error: Passwords do not match!");
         return;
       }
-  
-      // Update the password in Firebase Authentication
-      await updatePassword(user, password);
-  
-      // Use firstname as the document ID in Firestore within the 'login' collection
-      const userDocRef = doc(db, "login", storedFirstname); // Pointing to the 'login' collection
-      await setDoc(userDocRef, {
-        firstname: storedFirstname,
-        password: password,
-      });
-  
-      console.log(`Password change for: ${storedFirstname}`);
-  
-      // Navigate to the next page after successful save
-      navigate("/login");
-    } catch (e) {
-      console.error(e);
-      setError("An error occurred while saving the password!");
-    } finally {
-      setLoading(false);
-    }
-  };
-  
+    
+      if (!passwordRequirements.test(password)) {
+        setError(
+          "* Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character."
+        );
+        console.log("Error: Password requirements not met!");
+        return;
+      }
+    
+      setLoading(true);
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          setError("* No user is logged in!");
+          console.log("Auth currentUser is null or undefined");
+          return;
+        }
+    
+        const storedFirstname = localStorage.getItem("firstname");
+        if (!storedFirstname) {
+          setError("* Firstname not found!");
+          console.log("Error: Firstname not found in localStorage");
+          return;
+        }
+    
+        await updatePassword(user, password);
+        console.log("Firebase password updated");
+    
+        const userDocRef = doc(db, "login", storedFirstname);
+        await setDoc(userDocRef, {
+          firstname: storedFirstname,
+          password: password,
+        });
+    
+        console.log(`Password successfully updated for ${storedFirstname}`);
+        navigate("/login");
+      } catch (e) {
+        console.error("Error while saving password:", e);
+        setError("An error occurred while saving the password!");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+
   const togglePasswordVisibility = (field) => {
     if (field === "password") {
       setPasswordVisible((prev) => !prev);
@@ -143,7 +152,11 @@ export default function New() {
       </div>
 
       <div className="new-right">
-        <form ref={formRef} className="n-signup-form" onSubmit={handleSavePassword}>
+        <form
+          ref={formRef}
+          className="n-signup-form"
+          onSubmit={handleSavePassword}
+        >
           <h1>Create a New Password</h1>
           <p>Hello, {firstname}</p>
           <div className="new-password-container">
@@ -202,24 +215,39 @@ export default function New() {
                 <div className={passwordValid.uppercase ? "valid" : "invalid"}>
                   Uppercase and Lowercase letters
                 </div>
-                <div className={passwordValid.specialChar ? "valid" : "invalid"}>
-                  Special characters (~!@#$%^&amp;*()-_+={}[]|\\;:&quot;&lt;&gt;,./?)
+                <div
+                  className={passwordValid.specialChar ? "valid" : "invalid"}
+                >
+                  Special characters (~!@#$%^&amp;*()-_+={}
+                  []|\\;:&quot;&lt;&gt;,./?)
                 </div>
               </ul>
             </div>
           </div>
 
-          {error && <p className="error" style={{ color: "red" }}>{error}</p>}
+          {error && (
+            <p className="error" style={{ color: "red" }}>
+              {error}
+            </p>
+          )}
         </form>
 
-        {/* Button is now outside the form but triggers form submission */}
-        <button type="submit" id="new-submit-btn" onClick={() => formRef.current.submit()}>
+        <button
+          type="submit"
+          id="new-submit-btn"
+          onClick={(e) => {
+            console.log("Submit button clicked");
+            handleSavePassword(e);
+          }}
+        >
           Submit
         </button>
 
         <p className="new-link">
           Remembered your password?{" "}
-          <a href="/login" className="new-p-a">Login</a>
+          <a href="/login" className="new-p-a">
+            Login
+          </a>
         </p>
 
         {loading && (
