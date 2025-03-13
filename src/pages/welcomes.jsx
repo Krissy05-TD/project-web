@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
+import { firestore } from "../firebase";
 import './style/welcome.css';
 
 const firebaseConfig = {
@@ -17,7 +18,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 export default function Welcomes() {
-    const [firstname, setFirstName] = useState('');
     const [email, setEmail] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -28,6 +28,8 @@ export default function Welcomes() {
             fetchUserName(storedEmail); // Fetch firstname using the email
         }
     }, []);
+
+    const [firstname, setFirstName] = localStorage.getItem("firstname") || "User"; 
 
     const fetchUserName = async (email) => {
         try {
@@ -45,6 +47,31 @@ export default function Welcomes() {
             console.error('Error fetching user data:', error);
         }
     };
+
+    useEffect(() => {
+            const storedData = localStorage.getItem('data');
+            if (storedData) {
+                storedData(storedData);
+                fetchUserData(storedData);
+            }
+        }, []);
+
+        const fetchUserData = async () => {
+                const userEmail = localStorage.getItem("email");
+                if (!userEmail) return;
+            
+                try {
+                    const userDoc = doc(firestore, "edits", userEmail);
+                    const docSnap = await getDoc(userDoc);
+                    if (docSnap.exists()) {
+                        const userData = docSnap.data();
+                        console.log("Fetched User Data:", userData); // Debugging
+                        setFirstName(userData.firstname || ""); // Ensure full name is set
+                    }
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                }
+            };
 
     const handleSignOut = () => {
         localStorage.removeItem('email'); // Remove email from localStorage

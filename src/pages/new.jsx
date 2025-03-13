@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
-import { getAuth, updatePassword } from "firebase/auth";
+import { getAuth, updatePassword, onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for React Router v6
 import "./style/new.css";
 import { initializeApp } from "firebase/app";
@@ -59,6 +59,15 @@ export default function New() {
     if (storedFirstname) {
       setFirstName(storedFirstname);
     }
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("User authenticated:", user.email);
+      } else {
+        console.log("No user logged in.");
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const passwordRequirements =
@@ -98,6 +107,17 @@ export default function New() {
     
       setLoading(true);
       try {
+        await new Promise((resolve) => {
+          const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+              resolve(user);
+            }
+          });
+          setTimeout(() => {
+            unsubscribe();
+            resolve(null);
+          }, 3000);
+        }); 
         const user = auth.currentUser;
         if (!user) {
           setError("* No user is logged in!");
@@ -116,10 +136,7 @@ export default function New() {
         console.log("Firebase password updated");
     
         const userDocRef = doc(db, "login", storedFirstname);
-        await setDoc(userDocRef, {
-          firstname: storedFirstname,
-          password: password,
-        });
+        await setDoc(userDocRef, { firstname: storedFirstname, password });
     
         console.log(`Password successfully updated for ${storedFirstname}`);
         navigate("/login");
@@ -130,7 +147,6 @@ export default function New() {
         setLoading(false);
       }
     };
-    
 
   const togglePasswordVisibility = (field) => {
     if (field === "password") {

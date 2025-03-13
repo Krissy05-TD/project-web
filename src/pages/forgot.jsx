@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { firestore } from '../firebase'; // Ensure you have Firebase set up
 import { getFirestore, doc, updateDoc } from 'firebase/firestore';
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import { initializeApp } from 'firebase/app';
 import { getDoc, collection } from '@firebase/firestore';
 import './style/forgot.css'; // Assuming you have the CSS file for styling
@@ -128,6 +129,19 @@ export default function Forgot() {
       console.log(`User verified: ${firstname}`); // Log firstname as verification
     }
   };  
+
+  const handleForgotPassword = async (email) => {
+    const auth = getAuth();
+  
+    try {
+      await sendPasswordResetEmail(auth, email);
+      console.log("Password reset email sent!");
+      alert("Check your email for a password reset link.");
+    } catch (error) {
+      console.error("Error sending password reset email:", error);
+      alert(error.message);
+    }
+  };
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
