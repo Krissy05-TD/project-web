@@ -19,42 +19,16 @@ const db = getFirestore(app);
 
 export default function Welcomes() {
     const [email, setEmail] = useState('');
+    const [firstname, setFirstName] = useState(localStorage.getItem("firstname") || "User"); 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     useEffect(() => {
         const storedEmail = localStorage.getItem('email'); // Retrieve email from localStorage
         if (storedEmail) {
             setEmail(storedEmail);
-            fetchUserName(storedEmail); // Fetch firstname using the email
+            fetchUserData(storedEmail); // Fetch firstname using the email
         }
     }, []);
-
-    const [firstname, setFirstName] = localStorage.getItem("firstname") || "User"; 
-
-    const fetchUserName = async (email) => {
-        try {
-            const docRef = doc(db, 'users', email); // Reference the document by email
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const userData = docSnap.data();
-                setFirstName(userData.firstname || 'Guest'); // Set firstname or fallback to 'Guest'
-                console.log(`User exists: ${email}, Name: ${userData.firstname}`);
-            } else {
-                console.log(`User does not exist: ${email}`);
-            }
-        } catch (error) {
-            console.error('Error fetching user data:', error);
-        }
-    };
-
-    useEffect(() => {
-            const storedData = localStorage.getItem('data');
-            if (storedData) {
-                storedData(storedData);
-                fetchUserData(storedData);
-            }
-        }, []);
 
         const fetchUserData = async () => {
                 const userEmail = localStorage.getItem("email");

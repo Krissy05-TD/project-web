@@ -29,7 +29,7 @@ export default function Welcome() {
         }
     }, []);
 
-    const [firstname, setFirstName] = localStorage.getItem("firstname") || "User"; 
+    const [firstname, setFirstName] = useState(localStorage.getItem("firstname") || "User");
 
     const fetchUserName = async (email) => {
         try {

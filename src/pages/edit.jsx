@@ -1,9 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { firestore } from "../firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import "./style/edit.css";
+import { confirmPasswordReset } from "firebase/auth";
 
 export default function Edit() {
+  const [userData, setUserData] = useState({});
   const [username, setUserName] = useState("");
   const [firstname, setFirstName] = useState("");
   const [lastname, setLastName] = useState("");
@@ -12,6 +14,9 @@ export default function Edit() {
   const [password, setPassword] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState("");
 
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  
   const userDocRef = useRef("");
   const usernameRef = useRef();
   const firstnameRef = useRef();
@@ -19,6 +24,15 @@ export default function Edit() {
   const numberRef = useRef();
   const emailRef = useRef();
   const passwordRef = useRef();
+  const [fields, setFields] = useState({
+    username: "",
+    firstname: "",
+    lastname: "",
+    number: "",
+    email: "",
+    password: "",
+  });
+  const userEmail = localStorage.getItem("email");
 
   const handleSignOut = () => {
     localStorage.removeItem("email");
@@ -66,6 +80,33 @@ export default function Edit() {
       console.error(`Error updating ${field}:`, error);
       alert(`Failed to update ${field}. Please try again.`);
     } 
+  };
+
+  const togglePasswordVisibility = (field) => {
+    if (field === "password") {
+      setPasswordVisible((prev) => !prev);
+    } else if (field === "confirmPassword") {
+      setConfirmPasswordVisible((prev) => !prev);
+    }
+  };
+
+  useEffect(() => {
+    if (userEmail) {
+      const fetchUserData = async () => {
+        const userDocRef = doc(firestore, "edits", userEmail);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setUserData(userDoc.data());
+          setFields(userDoc.data());
+        }
+      };
+      fetchUserData();
+    }
+  }, [userEmail]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFields((prevFields) => ({ ...prevFields, [name]: value }));
   };
 
   const handleSave = async (e) => {
@@ -169,8 +210,8 @@ export default function Edit() {
                   id="user-btn"
                   onClick={() => updateField("username", username)}
                   onChange={(e) => {
-                    setFirstName(e.target.value);
-                    console.log("First Name Updated:", e.target.value);
+                    setUserName(e.target.value);
+                    console.log("Username Updated:", e.target.value);
                   }}
                 >
                   Change Username
@@ -181,7 +222,7 @@ export default function Edit() {
                 <input
                   type="text"
                   id="change-f"
-                  placeholder="Enter First Name"
+                  placeholder="New Firstname"
                   ref={firstnameRef}
                   value={firstname} // Ensure full name is displayed
                   onChange={(e) => {
@@ -202,7 +243,7 @@ export default function Edit() {
                 <input
                   type="text"
                   id="change-l"
-                  placeholder="Enter Last Name"
+                  placeholder="New Lastname"
                   ref={lastnameRef}
                   value={lastname}
                   onChange={(e) => setLastName(e.target.value)}
@@ -223,7 +264,7 @@ export default function Edit() {
                 <input
                   type="tel"
                   id="change-n"
-                  placeholder="012 345 6789"
+                  placeholder="New Number"
                   ref={numberRef}
                   value={number}
                   onChange={handleNumberChange}
@@ -241,7 +282,7 @@ export default function Edit() {
                 <input
                   type="email"
                   id="change-e"
-                  placeholder="example@gmail.com"
+                  placeholder="New Email"
                   ref={emailRef}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -262,14 +303,29 @@ export default function Edit() {
                 <input
                   type="password"
                   id="change-p"
-                  placeholder="Enter your password"
+                  placeholder="New Password"
                   ref={passwordRef}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <button type="button" id="pass-btn" onClick={handleSave}>
-                  Change Password
-                </button>
+                <div className="yes" >
+                  <a href="change"><img src="/check.png" alt="yes"></img></a>
+                </div>
+                <div className="no" >
+                  <a href="leave"><img src="/close.png" alt="no"></img></a>
+                </div>
+                <div className="eye" >
+                  <a href="leave">
+                    <img 
+                    src={confirmPasswordReset ? "/open.png" : "/closed.png"} 
+                    alt="Show Password"
+                    width="20px"
+                    height="20px"
+                    onClick={() => togglePasswordVisibility("confirmPassword")}>
+                    </img>
+                  </a>
+                </div>
+                
               </div>
             </div>
           </div>

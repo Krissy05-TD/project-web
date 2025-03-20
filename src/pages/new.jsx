@@ -71,12 +71,12 @@ export default function New() {
   }, []);
 
   const passwordRequirements =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
     const handleSavePassword = async (e) => {
-      if (e) e.preventDefault(); // Prevent form from reloading
+      if (e) e.preventDefault(); // Prevent default form submission
     
-      console.log("handleSavePassword function is running"); // Debugging log
+      console.log("handleSavePassword function is running");
       setError("");
     
       const password = passwordRef.current.value.trim();
@@ -107,21 +107,11 @@ export default function New() {
     
       setLoading(true);
       try {
-        await new Promise((resolve) => {
-          const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-              resolve(user);
-            }
-          });
-          setTimeout(() => {
-            unsubscribe();
-            resolve(null);
-          }, 3000);
-        }); 
         const user = auth.currentUser;
         if (!user) {
           setError("* No user is logged in!");
-          console.log("Auth currentUser is null or undefined");
+          console.log("Auth currentUser is null. Redirecting to login.");
+          navigate("/login"); // Redirect user to login if not logged in
           return;
         }
     
@@ -132,14 +122,18 @@ export default function New() {
           return;
         }
     
+        // Update password in Firebase Authentication
         await updatePassword(user, password);
         console.log("Firebase password updated");
     
+        // Store the new password in Firestore
         const userDocRef = doc(db, "login", storedFirstname);
         await setDoc(userDocRef, { firstname: storedFirstname, password });
     
         console.log(`Password successfully updated for ${storedFirstname}`);
-        navigate("/login");
+    
+        // ✅ Redirect to loginN page after success
+        navigate("/loginN");
       } catch (e) {
         console.error("Error while saving password:", e);
         setError("An error occurred while saving the password!");
@@ -147,6 +141,8 @@ export default function New() {
         setLoading(false);
       }
     };
+    
+    
 
   const togglePasswordVisibility = (field) => {
     if (field === "password") {
