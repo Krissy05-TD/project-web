@@ -111,7 +111,7 @@ export default function New() {
         if (!user) {
           setError("* No user is logged in!");
           console.log("Auth currentUser is null. Redirecting to login.");
-          navigate("/login"); // Redirect user to login if not logged in
+          navigate("/loginN"); // Redirect user to login if not logged in
           return;
         }
     

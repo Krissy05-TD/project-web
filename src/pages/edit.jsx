@@ -16,7 +16,7 @@ export default function Edit() {
 
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  
+
   const userDocRef = useRef("");
   const usernameRef = useRef();
   const firstnameRef = useRef();
@@ -66,7 +66,6 @@ export default function Edit() {
     const newData = { [field]: value }; // Correctly defining newData
     console.log("Updating:", { field, value });
 
-
     try {
       const userDocRef = doc(firestore, "edits", userEmail);
       await setDoc(userDocRef, newData, { merge: true });
@@ -79,7 +78,7 @@ export default function Edit() {
     } catch (error) {
       console.error(`Error updating ${field}:`, error);
       alert(`Failed to update ${field}. Please try again.`);
-    } 
+    }
   };
 
   const togglePasswordVisibility = (field) => {
@@ -205,17 +204,18 @@ export default function Edit() {
                   onChange={(e) => setUserName(e.target.value)}
                   onClick={handleSave}
                 />
-                <button
-                  type="button"
-                  id="user-btn"
-                  onClick={() => updateField("username", username)}
-                  onChange={(e) => {
-                    setUserName(e.target.value);
-                    console.log("Username Updated:", e.target.value);
-                  }}
-                >
-                  Change Username
-                </button>
+                <div className="check-yn">
+                  <div className="n-yes">
+                    <a href="welcomes" onClick={() => updateField("username", username)}>
+                      <img src="/check.png" alt="yes"></img>
+                    </a>
+                  </div>
+                  <div className="n-no">
+                    <a href="edit" onClick={() => updateField("username", username)}>
+                      <img src="/close.png" alt="no"></img>
+                    </a>
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -230,13 +230,18 @@ export default function Edit() {
                     console.log("First Name Updated:", e.target.value); // Debugging
                   }}
                 />
-                <button
-                  type="button"
-                  id="first-btn"
-                  onClick={() => updateField("firstname", firstname)}
-                >
-                  Change Firstname
-                </button>
+                <div className="check-yn">
+                <div className="n-yes">
+                  <a href="welcomes">
+                    <img src="/check.png" alt="yes"></img>
+                  </a>
+                </div>
+                <div className="n-no">
+                  <a href="edit">
+                    <img src="/close.png" alt="no"></img>
+                  </a>
+                </div>
+              </div>
               </div>
 
               <div>
@@ -248,13 +253,18 @@ export default function Edit() {
                   value={lastname}
                   onChange={(e) => setLastName(e.target.value)}
                 />
-                <button
-                  type="button"
-                  id="last-btn"
-                  onClick={() => updateField("lastname", lastname)}
-                >
-                  Change Lastname
-                </button>
+                <div className="check-yn">
+                  <div className="n-yes">
+                    <a href="welcomes">
+                      <img src="/check.png" alt="yes"></img>
+                    </a>
+                  </div>
+                  <div className="n-no">
+                    <a href="edit">
+                      <img src="/close.png" alt="no"></img>
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -269,13 +279,18 @@ export default function Edit() {
                   value={number}
                   onChange={handleNumberChange}
                 />
-                <button
-                  type="button"
-                  id="num-btn"
-                  onClick={() => updateField("number", number)}
-                >
-                  Change Number
-                </button>
+                <div className="check-yn">
+                  <div className="n-yes">
+                    <a href="welcomes">
+                      <img src="/check.png" alt="yes"></img>
+                    </a>
+                  </div>
+                  <div className="n-no">
+                    <a href="edit">
+                      <img src="/close.png" alt="no"></img>
+                    </a>
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -287,13 +302,18 @@ export default function Edit() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
-                <button
-                  type="button"
-                  id="mail-btn"
-                  onClick={() => updateField("email", email)}
-                >
-                  Change Email
-                </button>
+                <div className="check-yn">
+                  <div className="n-yes">
+                    <a href="welcomes">
+                      <img src="/check.png" alt="yes"></img>
+                    </a>
+                  </div>
+                  <div className="n-no">
+                    <a href="edit">
+                      <img src="/close.png" alt="no"></img>
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -308,24 +328,29 @@ export default function Edit() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <div className="yes" >
-                  <a href="change"><img src="/check.png" alt="yes"></img></a>
+                <div className="edit-with-container">
+                  <div className="eye">
+                    <img
+                      src={confirmPasswordVisible ? "/open.png" : "/closed.png"}
+                      alt="Show Password"
+                      width="20px"
+                      height="20px"
+                      onClick={() =>
+                        togglePasswordVisibility("confirmPassword")
+                      }
+                    ></img>
+                  </div>
+                  <div className="yes">
+                    <a href="welcomes">
+                      <img src="/check.png" alt="yes"></img>
+                    </a>
+                  </div>
+                  <div className="no">
+                    <a href="edit">
+                      <img src="/close.png" alt="no"></img>
+                    </a>
+                  </div>
                 </div>
-                <div className="no" >
-                  <a href="leave"><img src="/close.png" alt="no"></img></a>
-                </div>
-                <div className="eye" >
-                  <a href="leave">
-                    <img 
-                    src={confirmPasswordReset ? "/open.png" : "/closed.png"} 
-                    alt="Show Password"
-                    width="20px"
-                    height="20px"
-                    onClick={() => togglePasswordVisibility("confirmPassword")}>
-                    </img>
-                  </a>
-                </div>
-                
               </div>
             </div>
           </div>
